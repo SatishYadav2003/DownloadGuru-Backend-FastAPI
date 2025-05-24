@@ -30,6 +30,11 @@ class MergeRequest(BaseModel):
     audio_url: str
     title: str = "merged_video"
     
+
+@app.post("/ping")
+def ping():
+    return {"message":"pong"}
+    
 @app.post("/api/download")
 def handleDownload(url: RequestedUrl):
     try:
