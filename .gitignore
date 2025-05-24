@@ -1,0 +1,42 @@
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment folder
+myenv/
+
+# VS Code settings
+.vscode/
+
+# Environment variables
+.env
+.env.*
+
+# Logs and databases
+*.log
+*.sqlite3
+
+# Byte-compiled / optimized / DLL files
+*.pyc
+*.pyo
+*.pyd
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Pytest cache
+.pytest_cache/
+
+# Mypy cache
+.mypy_cache/
+
+# Coverage reports
+htmlcov/
+.coverage
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
