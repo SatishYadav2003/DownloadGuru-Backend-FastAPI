@@ -37,6 +37,7 @@ def handleDownload(url: RequestedUrl):
             'quiet': True,
             'skip_download': True,
             'extract_flat': False,
+            'cookiefile': 'cookies.txt'
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
