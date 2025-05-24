@@ -31,7 +31,7 @@ class MergeRequest(BaseModel):
     title: str = "merged_video"
     
 
-@app.post("/ping")
+@app.get("/ping")
 def ping():
     return {"message":"pong"}
     
