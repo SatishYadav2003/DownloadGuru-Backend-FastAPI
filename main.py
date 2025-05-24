@@ -38,12 +38,44 @@ def ping():
 @app.post("/api/download")
 def handleDownload(url: RequestedUrl):
     try:
+        # ydl_opts = {
+        #     'quiet': True,
+        #     'skip_download': True,
+        #     'extract_flat': False,
+        #     'cookiefile': 'cookies.txt'
+        # }
         ydl_opts = {
+            # --- Download Behavior ---
             'quiet': True,
-            'skip_download': True,
+            'no_warnings': True,
+            'ignoreerrors': True,
+            'noplaylist': True,  
+            'skip_download': False,
+            'cookiefile': 'cookies.txt', 
+            'http_headers': {
+                'User-Agent': (
+                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                    'AppleWebKit/537.36 (KHTML, like Gecko) '
+                    'Chrome/113.0.0.0 Safari/537.36'
+                ),
+                'Accept-Language': 'en-US,en;q=0.9',
+            },
+            'source_address': '0.0.0.0', 
+            'socket_timeout': 15,
+            'retries': 10,
+            'fragment_retries': 10,
+            'concurrent_fragment_downloads': 5,
+            'throttled_rate': None, 
+            'geo_bypass': True,
+            'geo_bypass_country': 'IN',
+            'allow_multiple_video_streams': True,
+            'allow_multiple_audio_streams': True,
+            'age_limit': 99,
             'extract_flat': False,
-            'cookiefile': 'cookies.txt'
+            'force_keyframes_at_cuts': True,
+            'cachedir': False, 
         }
+
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url.url, download=False)
