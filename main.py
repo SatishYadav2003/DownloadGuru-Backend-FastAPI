@@ -8,6 +8,7 @@ import subprocess
 from fastapi.responses import FileResponse
 import yt_dlp
 from utils.file_helpers import download_file, cleanup_files
+import random
 
 
 app = FastAPI()
@@ -44,37 +45,35 @@ def handleDownload(url: RequestedUrl):
         #     'extract_flat': False,
         #     'cookiefile': 'cookies.txt'
         # }
+        
+        cookie_file = random.choice(['cookies1.txt', 'cookies2.txt'])
+
         ydl_opts = {
-            # --- Download Behavior ---
             'quiet': True,
             'no_warnings': True,
             'ignoreerrors': True,
-            'noplaylist': True,  
+            'noplaylist': True,
             'skip_download': False,
-            'cookiefile': 'cookies.txt', 
+            'cookiefile': cookie_file,
             'http_headers': {
                 'User-Agent': (
-                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                    'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) '
                     'AppleWebKit/537.36 (KHTML, like Gecko) '
-                    'Chrome/113.0.0.0 Safari/537.36'
+                    'Chrome/136.0.0.0 Mobile Safari/537.36'
                 ),
                 'Accept-Language': 'en-US,en;q=0.9',
             },
-            'source_address': '0.0.0.0', 
+            'source_address': '0.0.0.0',
             'socket_timeout': 15,
             'retries': 10,
             'fragment_retries': 10,
             'concurrent_fragment_downloads': 5,
-            'throttled_rate': None, 
             'geo_bypass': True,
             'geo_bypass_country': 'IN',
-            'allow_multiple_video_streams': True,
-            'allow_multiple_audio_streams': True,
             'age_limit': 99,
-            'extract_flat': False,
-            'force_keyframes_at_cuts': True,
-            'cachedir': False, 
+            'cachedir': False,
         }
+
 
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
