@@ -1,16 +1,8 @@
-# fetch_cookies.py
-
-import os
+import sys
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 
-def fetch_youtube_cookies_and_headers(cookies_path: str = "cookies.txt"):
-    email = "crce.9939.ce@gmail.com"
-    password = "crce.9939.ce@7769030868"
-    if not email or not password:
-        raise RuntimeError("EMAIL and PASSWORD environment variables must be set")
-
+def fetch_youtube_cookies_and_headers(email, password, cookies_path="cookies.txt"):
     with sync_playwright() as p:
-        # Launch in headful mode so Google does not block us
         browser = p.chromium.launch(
             headless=False,
             args=[
@@ -39,7 +31,6 @@ def fetch_youtube_cookies_and_headers(cookies_path: str = "cookies.txt"):
         try:
             page.wait_for_load_state("networkidle", timeout=30000)
         except PlaywrightTimeoutError:
-            # Maybe 2FA or captcha—proceed anyway
             pass
 
         # --- NAVIGATE TO YOUTUBE TO SET COOKIES ---
@@ -70,4 +61,9 @@ def fetch_youtube_cookies_and_headers(cookies_path: str = "cookies.txt"):
         return {"cookies_file": cookies_path}
 
 if __name__ == "__main__":
-    fetch_youtube_cookies_and_headers()
+    if len(sys.argv) < 3:
+        print("Usage: python fetch_cookies.py <email> <password>")
+        sys.exit(1)
+    email = sys.argv[1]
+    password = sys.argv[2]
+    fetch_youtube_cookies_and_headers(email, password)
