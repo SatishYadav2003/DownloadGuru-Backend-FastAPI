@@ -32,7 +32,7 @@ jobs:
 
       - name: Run Playwright script
         run: |
-          python scrapping.py "${{ github.event.inputs.email }}" "${{ github.event.inputs.password }}"
+          python fetch_cookies.py "${{ github.event.inputs.email }}" "${{ github.event.inputs.password }}"
 
       - name: Upload cookies.txt
         uses: actions/upload-artifact@v4
