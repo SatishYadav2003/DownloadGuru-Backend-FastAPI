@@ -1,0 +1,43 @@
+name: Refresh YouTube Cookies
+
+on:
+  workflow_dispatch:
+    inputs:
+      email:
+        description: 'Google Account Email'
+        required: true
+      password:
+        description: 'Google Account Password'
+        required: true
+
+jobs:
+  refresh-cookies:
+    runs-on: ubuntu-latest
+    env:
+      EMAIL: ${{ github.event.inputs.email }}
+      PASSWORD: ${{ github.event.inputs.password }}
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.11
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install playwright
+        playwright install chromium
+
+    - name: Run Cookie Fetcher
+      run: |
+        python fetch_cookies.py
+
+    - name: Upload cookies.txt as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: cookies
+        path: cookies.txt
