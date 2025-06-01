@@ -55,11 +55,23 @@ def fetch_youtube_cookies_and_headers(email, password, cookies_path='cookies.txt
         # Login flow
         page.goto("https://accounts.google.com/signin/v2/identifier")
         page.wait_for_selector('input[type="email"]', timeout=10000)
-        page.fill('input[type="email"]', email)
+
+        # Type email char-by-char with delay
+        page.focus('input[type="email"]')
+        for char in email:
+            page.keyboard.type(char)
+            page.wait_for_timeout(150)  # 150ms delay between chars
+
         page.click('button:has-text("Next")')
 
         page.wait_for_selector('input[type="password"]', timeout=10000)
-        page.fill('input[type="password"]', password)
+
+        # Type password char-by-char with delay
+        page.focus('input[type="password"]')
+        for char in password:
+            page.keyboard.type(char)
+            page.wait_for_timeout(100)  # 150ms delay between chars
+
         page.click('button:has-text("Next")')
 
         try:
@@ -71,6 +83,7 @@ def fetch_youtube_cookies_and_headers(email, password, cookies_path='cookies.txt
         # Navigate to YouTube to get relevant cookies
         page.goto("https://www.youtube.com")
         page.wait_for_load_state("networkidle", timeout=20000)
+
 
         # Get cookies
         cookies = context.cookies()
