@@ -38,7 +38,7 @@ class MergeRequest(BaseModel):
 def fetch_youtube_cookies_and_headers(email, password, cookies_path='cookies.txt'):
     with sync_playwright() as p:
         browser = p.chromium.launch(
-            headless=False,
+            headless=True,
             args=[
                 "--disable-blink-features=AutomationControlled",
                 "--no-sandbox",
