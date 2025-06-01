@@ -1,0 +1,42 @@
+# .github/workflows/fetch-cookies.yml
+
+name: Refresh YouTube Cookies
+
+on:
+  workflow_dispatch:   # allows manual/API trigger
+
+jobs:
+  refresh-cookies:
+    runs-on: ubuntu-latest
+
+    env:
+      # These will be overridden by test.py at dispatch time
+      EMAIL: "placeholder@example.com"
+      PASSWORD: "placeholder_password"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install playwright
+          playwright install chromium
+
+      - name: Run cookie extractor under Xvfb
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+          xvfb-run -a python fetch_cookies.py
+
+      - name: Upload cookies.txt artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: cookies
+          path: cookies.txt
