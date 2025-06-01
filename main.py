@@ -33,60 +33,48 @@ class MergeRequest(BaseModel):
  
  
 
+
 def get_youtube_headers_and_cookies():
-    """
-    Launch Playwright to visit YouTube and extract fresh cookies and headers.
-    Returns a dict with 'User-Agent', 'Accept-Language', and 'Cookie' keys.
-    """
-    headers_for_ytdlp = {}
     try:
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)  # headless for production, set False for debug
-            context = browser.new_context(
-                geolocation={"latitude": 28.6139, "longitude": 77.2090},
-                permissions=["geolocation"]
-            )
+            browser = p.chromium.launch(headless=True)
+            context = browser.new_context()
             page = context.new_page()
             page.goto("https://www.youtube.com", wait_until="networkidle")
-
             page.wait_for_load_state("load")
 
             cookies = context.cookies()
-            cookie_string = "; ".join(f"{c['name']}={c['value']}" for c in cookies)
+            cookie_list = [
+                {
+                    "name": c["name"],
+                    "value": c["value"],
+                    "domain": c["domain"],
+                    "path": c.get("path", "/"),
+                    "expires": c.get("expires", -1),
+                    "secure": c.get("secure", False),
+                    "httponly": c.get("httpOnly", False)
+                }
+                for c in cookies
+            ]
 
-            try:
-                user_agent = page.evaluate("() => navigator.userAgent")
-            except Exception:
-                user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+            user_agent = page.evaluate("() => navigator.userAgent")
+            accept_language = page.evaluate("() => navigator.language")
+        
 
-            try:
-                accept_language = page.evaluate("() => navigator.language")
-            except Exception:
-                accept_language = "en-US,en;q=0.9"
-
-            headers_for_ytdlp = {
+            return {
                 "User-Agent": user_agent,
                 "Accept-Language": accept_language,
-                "Cookie": cookie_string
+                "Cookies": cookie_list
             }
-    except PlaywrightTimeoutError:
-        print("Page load timed out, using default headers.")
-        headers_for_ytdlp = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Cookie": ""
-        }
     except Exception as e:
-        print(f"Unexpected error fetching headers: {e}")
-        headers_for_ytdlp = {
+        print(f"Error getting headers and cookies: {e}")
+        return {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
             "Accept-Language": "en-US,en;q=0.9",
-            "Cookie": ""
+            "Cookies": []
         }
-
-    return headers_for_ytdlp 
     
-
+# get_youtube_headers_and_cookies()
 @app.get("/ping")
 def ping():
     return {"message":"pong"}
@@ -102,10 +90,10 @@ def handleDownload(url: RequestedUrl):
             'ignoreerrors': True,
             'noplaylist': True,
             'skip_download': False,
+            'cookie_list': headers["Cookies"],
             'http_headers': {
-                'User-Agent': headers.get("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"),
-                'Accept-Language': headers.get("Accept-Language", "en-US,en;q=0.9"),
-                'Cookie': headers.get("Cookie", "")
+                'User-Agent': headers["User-Agent"],
+                'Accept-Language': headers["Accept-Language"]
             },
             'source_address': '0.0.0.0',
             'socket_timeout': 15,
