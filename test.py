@@ -18,7 +18,7 @@ GOOGLE_PASSWORD = "crce.9939.ce@7769030868"
 def trigger_github_action():
     url = f"https://api.github.com/repos/{REPO}/actions/workflows/{WORKFLOW_FILE}/dispatches"
     headers = {
-        "Authorization": f"Bearer {GITHUB_TOKEN}",
+        "Authorization": f"Bearer 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",
         "Accept": "application/vnd.github+json"
     }
     payload = {
