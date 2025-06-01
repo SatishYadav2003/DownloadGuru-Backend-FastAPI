@@ -9,7 +9,7 @@ from fastapi.responses import FileResponse
 import yt_dlp
 from utils.file_helpers import download_file, cleanup_files
 import random
-
+from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 
 app = FastAPI()
 
@@ -30,6 +30,61 @@ class MergeRequest(BaseModel):
     video_url: str
     audio_url: str
     title: str = "merged_video"
+ 
+ 
+
+def get_youtube_headers_and_cookies():
+    """
+    Launch Playwright to visit YouTube and extract fresh cookies and headers.
+    Returns a dict with 'User-Agent', 'Accept-Language', and 'Cookie' keys.
+    """
+    headers_for_ytdlp = {}
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)  # headless for production, set False for debug
+            context = browser.new_context(
+                geolocation={"latitude": 28.6139, "longitude": 77.2090},
+                permissions=["geolocation"]
+            )
+            page = context.new_page()
+            page.goto("https://www.youtube.com", wait_until="networkidle")
+
+            page.wait_for_load_state("load")
+
+            cookies = context.cookies()
+            cookie_string = "; ".join(f"{c['name']}={c['value']}" for c in cookies)
+
+            try:
+                user_agent = page.evaluate("() => navigator.userAgent")
+            except Exception:
+                user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+
+            try:
+                accept_language = page.evaluate("() => navigator.language")
+            except Exception:
+                accept_language = "en-US,en;q=0.9"
+
+            headers_for_ytdlp = {
+                "User-Agent": user_agent,
+                "Accept-Language": accept_language,
+                "Cookie": cookie_string
+            }
+    except PlaywrightTimeoutError:
+        print("Page load timed out, using default headers.")
+        headers_for_ytdlp = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Cookie": ""
+        }
+    except Exception as e:
+        print(f"Unexpected error fetching headers: {e}")
+        headers_for_ytdlp = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Cookie": ""
+        }
+
+    return headers_for_ytdlp 
     
 
 @app.get("/ping")
@@ -39,14 +94,7 @@ def ping():
 @app.post("/api/download")
 def handleDownload(url: RequestedUrl):
     try:
-        # ydl_opts = {
-        #     'quiet': True,
-        #     'skip_download': True,
-        #     'extract_flat': False,
-        #     'cookiefile': 'cookies.txt'
-        # }
-        
-        cookie_file = random.choice(['cookies1.txt', 'cookies2.txt'])
+        headers = get_youtube_headers_and_cookies()
 
         ydl_opts = {
             'quiet': True,
@@ -54,14 +102,10 @@ def handleDownload(url: RequestedUrl):
             'ignoreerrors': True,
             'noplaylist': True,
             'skip_download': False,
-            'cookiefile': cookie_file,
             'http_headers': {
-                'User-Agent': (
-                    'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) '
-                    'AppleWebKit/537.36 (KHTML, like Gecko) '
-                    'Chrome/136.0.0.0 Mobile Safari/537.36'
-                ),
-                'Accept-Language': 'en-US,en;q=0.9',
+                'User-Agent': headers.get("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"),
+                'Accept-Language': headers.get("Accept-Language", "en-US,en;q=0.9"),
+                'Cookie': headers.get("Cookie", "")
             },
             'source_address': '0.0.0.0',
             'socket_timeout': 15,
