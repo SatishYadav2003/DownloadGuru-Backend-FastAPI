@@ -6,7 +6,7 @@ import io
 import os
 
 # ─── CONFIG ──────────────────────────────────────────────────────────────────
-GITHUB_TOKEN = "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"
+GITHUB_TOKEN = "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"
 REPO = "SatishYadav2003/DownloadGuru-Backend-FastAPI"
 WORKFLOW_FILE = "fetch-cookies.yml"
 BRANCH = "main"
