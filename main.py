@@ -55,23 +55,19 @@ def fetch_youtube_cookies_and_headers(email, password, cookies_path='cookies.txt
         # Login flow
         page.goto("https://accounts.google.com/signin/v2/identifier")
         page.wait_for_selector('input[type="email"]', timeout=10000)
-
-        # Type email char-by-char with delay
         page.focus('input[type="email"]')
         for char in email:
             page.keyboard.type(char)
-            page.wait_for_timeout(150)  # 150ms delay between chars
-
+            page.wait_for_timeout(150)
         page.click('button:has-text("Next")')
 
-        page.wait_for_selector('input[type="password"]', timeout=10000)
+        page.wait_for_load_state('networkidle', timeout=15000)  # wait for navigation
 
-        # Type password char-by-char with delay
+        page.wait_for_selector('input[type="password"]:visible', timeout=15000)
         page.focus('input[type="password"]')
         for char in password:
             page.keyboard.type(char)
-            page.wait_for_timeout(100)  # 150ms delay between chars
-
+            page.wait_for_timeout(150)
         page.click('button:has-text("Next")')
 
         try:
